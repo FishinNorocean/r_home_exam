@@ -1,0 +1,219 @@
+---
+title: "Take Home Exam"
+author: "桑闻锴 3210104227"
+date: "2024-01-18"
+output:
+  pdf_document: default
+  word_document: default
+  html_document: default
+---
+
+\begin{center}
+\textbf{Using R for economics and statistics 2023-2024}
+\end{center}
+
+
+# Part I
+Please write your answer of Part I here.
+
+1-5. A A C B B         
+
+6-10. D C A A C 
+
+11. %m %d
+
+12. high >=
+
+13. while(TRUE) break # or you can use `repeat` instead of `while(TRUE)`
+
+14. set.seed rnorm df_train summary
+
+15. coefficients mean df_train
+
+16. runtime binwidth geom_density
+
+17. size = "Generosity" geom_point()
+
+18. color geom_line labs
+
+19. geom_histogram seq
+
+20. geom_point alpha
+\newpage
+
+# Part II
+
+## Question 1. Which standard error should we use?
+
+Let's consider a simple linear regression model:
+$$
+y_i=a+bx_i+u_i,\ i=1,2,...,n
+$$
+We can solve the The OLS estimator
+$$
+\hat{b}=\frac{\sum_{i=1}^{n}(y_i-\bar{y})(x_i-\bar{x})}{\sum_{i=1}^{n}(x_i-\bar{x})^2},\ \hat{a}=\bar{y}-\hat{b}\bar{x}.
+$$
+If we suppose conditional homoskedasticity $E(u_i^2|x_i)=\sigma^2$, we can estimate $\sigma^2$ by
+$$
+\hat{\sigma}^2=\frac{1}{n-2}\sum_{i=1}^{n}\hat{u}^2_i,\ \hat{u}_i=y_i-\hat{a}-\hat{b}x_i.
+$$
+Under conditional homoskedasticity, the **simple standard error** of  $\hat{b}$ is
+$$
+se_0(\hat{b})=\sqrt{\frac{\hat{\sigma}^2}{\sum_{i=1}^{n}(x_i-\bar{x})^2}}
+$$
+Based on this standard error, we can test the null hypothesis $H_0:b=0$ under $\alpha=0.05$, the refuse region is
+$$
+W_0=\{|t_0|=\left|\frac{\hat{b}}{se_0(\hat{b})}\right|>1.96\}
+$$
+However,  if conditional homoskedasticity is broken, $se_0$ may be not suitable. An alternative standard error is **White Heteroskedasticity Robust Standard Error**:
+$$
+se_{1}(\hat{b})=\sqrt{\frac{\sum_{i=1}^{n}(x_i-\bar{x})^2\hat{u}^2_i}{(\sum_{i=1}^{n}(x_i-\bar{x})^2)^2}}
+$$
+Based on this robust standard error, we can construct a robust test for the null hypothesis $H_0:b=0$ under $\alpha=0.05$, the refuse region is
+$$
+W_1=\{|t_1|=\left|\frac{\hat{b}}{se_1(\hat{b})}\right|>1.96\}
+$$
+Which standard error should we use? This simulation study may help you.
+
+(1) (Simulate data) Please generate $x=(x_1,...,x_n)$ with sample size $n=1000$, $x_i\sim N(0,1)$. Then simulate $u_{1i}\sim N(0,1)$ and $u_{2i}\sim N(0,x_i^2)$. We set $a=1$, $b=2$ , then generate $y_1=(y_{11},y_{12},...,y_{1n})$ and $y_2=(y_{21},y_{22},...,y_{2n})$ by
+
+$$\text{Model 1(Homoskedasticity):}\ y_{1i}=a+bx_i+u_{1i},\ i=1,2,...,n\\$$
+
+$$\text{Model 2(Heteroskedasticity):}\ y_{2i}=a+bx_i+u_{2i},\ i=1,2,...,n$$
+
+Draw scatter plots for $y_1-x$ and $y_2-x$ respectively.
+
+
+(2) (Write a function to implement simple regression) Write a function `reg(x,y,n)`. Input data $x, y$ and sample size $n$, this function should return $\hat{a},\hat{b},\hat{\sigma}^2,se_0(\hat{b})$ and $se_1(\hat{b})$. Use your `reg` function to run regression for `y1~x` and `y2~x`. Compare your result with `lm` function in base `R`. Can you reject the null hypothesis $b=0$? What is the difference between $se_0$ and $se_1$?
+
+
+(3) (Hypothesis testing under homoskedasticity) Now write a loop. In every step, generate $x=(x_1,...,x_n)$ and $u_1=(u_{11},...,u_{1n})$ with sample size $n=1000$, $x_i\sim N(0,1)$ and $u_{1i}\sim N(0,1)$ , then use $y_{1i}=1+u_{1i}$ to generate $y_1=(y_{11},...,y_{1n})$(That is, the null hypothesis $b=0$ is true).  Use $t_0=\hat{b}/se_0(\hat{b})$ and $t_1=\hat{b}/se_1(\hat{b})$ to test the null hypothesis $b=0$ respectively. Repeat this process for $M=10000$ times. Please report the proportion of rejecting the null hypothesis $b=0$ for these two different tests. (Hints: you should get two vectors `t0` and `t1` of length $M=10000$. `t0` and `t1` record $t_0$ and $t_1$ values for 10000 simulations. Then compare them with the critical value 1.96, you will get the proportion) 
+
+
+(4) (Study the size distortion under heteroskedasticity) Repeat what you do in (3), but now use $u_{2i}\sim N(0,x_i^2)$. That is, in every step, generate $x=(x_1,...,x_n)$ and $u_2=(u_{21},...,u_{2n})$ with sample size $n=1000$, $x_i\sim N(0,1)$ and $u_{2i}\sim N(0,x_i^2)$ , then use $y_{2i}=1+u_{2i}$ to generate $y_2=(y_{21},...,y_{2n})$(That is, the null hypothesis $b=0$ is true).  Use $t_0=\hat{b}/se_0(\hat{b})$ and $t_1=\hat{b}/se_1(\hat{b})$ to test the null hypothesis $b=0$ respectively. Repeat this process for $M=10000$ times. Please report the proportion of rejecting the null hypothesis $b=0$ for these two different tests.
+
+
+
+(5) Compare your result in (3) and (4). Under homoskedasticity, are these two standard errors perform similar? Under heteroskedasticity, which performs better? In application, if you are not sure whether the model is heteroskedasticity, which standard error should we use?
+
+\newpage
+## Question 2. Ploting and Classification: Legendary Pokémon
+
+Suppose we are now in the world of Pokémon. Owning a legendary Pokémon is the dream of every Pokémon trainer. As an expert in Pokémon, you want to investigate the defining characteristics of legendary Pokémon, so that we can find legendary Pokémon precisely. Dataset `pokedex.csv` includes information about 801 Pokémon. `is_legendary` is what we want to predict.
+
+(1) Load the dataset `pokedex.csv`. Convert columns `type` and `is_legendary` to factors and look at the first six rows of the dataset. Count the number of legendary/non-legendary Pokémon in this dataset, then report the proportion of legendary/non-legendary. 
+
+(2) We now know that there are 70 legendary Pokémon – a sizable minority at 9% of the population! Let's start to explore some of their distinguishing characteristics. 
+
+* (i) First of all, we'll plot the relationship between `height_m` and `weight_kg` for all 801 Pokémon, highlighting those that are classified as legendary. We'll also add conditional labels to the plot, which will only print a Pokémon's name if it is taller than 7.5m or heavier than 600kg.
+
+
+* (ii) Now we look at the effect of a Pokémon's `type` on its legendary/non-legendary classification. There are 18 possible types, ranging from the common (Grass / Normal / Water) to the rare (Fairy / Flying / Ice). We will calculate the proportion of legendary Pokémon within each category, and then plot these proportions using a simple bar chart.
+
+
+* (iii) Before fitting the model, we will consider the influence of a Pokémon's fighter stats (`attack`, `sp_attack`, `defense`, `sp_defense`, `hp`, `speed`.) on its status. Please produce boxplots for these fighter stats to show the difference between legendary/non-legendary type. (Hints: That is, you should procedure 6 boxplots. In every boxplot, `x` should be legendary/non-legendary classification, `y` should be one of six fighter stats. In such a boxplot, we can compare the difference of a fighter stat between legendary and non-legendary Pokémon.)
+
+
+(3) As we might expect, legendary Pokémon outshine their ordinary counterparts in height, weight and all fighter stats. What's more, Pokémon's type may also have effect on its legendary/non-legendary classification. Now we consider these factors together to predict whether a Pokémon is legendary.
+
+* (i) Before fitting our model, we will split the `pokedex` into a training set (`pokedex_train`) and a test set (`pokedex_test`). We have generate the rows for training set. Please complete the following code to create a training/test split. Note that there are some rows with `NA` in the test set. Please replace `NA`s in test set with the mean of coresponding colunm in test set. (e.g., if there is a NA in column `height_m`, then you calculate the mean of this column in test set, and replace NA with this mean)
+
+```{r}
+# Set seed for reproducibility
+set.seed(1234)
+
+# Save number of rows in dataset
+#n <- nrow(pokedex)
+n <- 801
+
+# Generate 60% sample of rows
+sample_rows <- sample(n, 0.6 * n)
+
+# Use `sample_rows` to create training set
+#pokedex_train <-
+
+# The left is test set
+#pokedex_test <-
+
+# Replace NAs in test set with sample mean
+
+```
+
+* (ii) Fit a logistic regression on the training set `pokedex_train`. Height, weight, type and all fighter stats should be included as predictor. Use `summary()` to show your model
+
+
+* (iii) Fit a simple classification decision tree on the training set `pokedex_train`. Height, weight, type and all fighter stats should be included as predictor. Show your tree use `rpart.plot()` and explain the plot briefly.
+
+
+* (iv) Decision trees are unstable and sensitive to small variations in the data. Now fit a random forest on the training set `pokedex_train` and print model output.
+
+
+(4) Now we have 3 models: logistic regression, dicision tree and random forest. In order to allow direct comparison among these models, please use your test set to plot the ROC curves for these models, which will visualize their true positive rate (TPR) and false positive rate (FPR) respectively. The closer the curve is to the top left of the plot, the higher the area under the curve (AUC) and the better the model. How does these models perform? (Hints: you can use the `ROCR` package and `predict`, `prediction` `performance` functions)
+
+\newpage
+## Question 3. Modeling VIX
+This question is about the larger VIX data set `vixlarge.csv` that contains the VIX data and the associated dates. The CBOE VIX is colloquially referred to as the "fear index" or the "fear gauge". We choose to study the VIX not only on the widespread consensus that the VIX is a barometer of the overall market sentiment as to what concerns
+investors' risk appetite, but also on the fact that there are many trading strategies that rely on the VIX index for hedging and speculative purposes. 
+
+(1) Plot the VIX data against date. Clearly label the horizontal and vertical axises.
+
+
+(2) We know that volatility ($y_{t}$ hearafter) exhibits a high degree of persistence and it's likely that $y_{t}$ is better forecast by using more lags, $y_{t-1}, y_{t-3}, \ldots .$ That makes us think of the model with
+$J$ lags:
+$$
+y_{t}=\beta_{0}+\beta_{1} y_{t-1}+\beta_{2} y_{t-2}+\cdots+\beta_{J} y_{t-J}+u_{t}
+$$
+where $u_{t}$ is the error term. But to capture long-range dependence might entail $J=10$ $J=20,$ or higher. Let the dependent variable $y$ be the VIX and the first and the 2nd to 23th columns of the independent variable $X$ be the intercept term and the 1-22 lag of VIX. Write your own code to implement AR(1) to AR(22) model, and pick out the best model by AIC and BIC, are the results same, generate a table to illustrate your results? if not, why?
+
+
+(3) Set the window length at 3000 and make forecast on the next period $y_{t+1}$, start from the beginning and roll until the end. For each roll, we make forecast using AR(1) to AR(22). Compute the mean squared forecast errors and the mean absolute forecast errors for AR(1) to AR(22) and report them in a table.
+
+
+(4) Model with too many lagged terms may be complicate, regularization method may be a good idea. We still do rolling window as (3), but for each roll, we make forecast using ridge and lasso methods with tuning parameter $\lambda = 1, 10$ for each method.(That is, we have 4 new models. We still use 1-22 lag of VIX as predictor.) Compute the mean squared forecast errors and the mean absolute forecast errors. 
+
+(5) Discuss your results in (3) and (4). We have consider 26 models here (AR(1)-AR(22)+2 Lasso Models + 2 Ridge models). Which model performs best? Dose regularization performs better than AR model here? Explain briefly.
+
+\newpage
+## Question 4. Lasso vs OLS
+We have learnt that Lasso can set some coefficient exactly 0, while OLS can not do this. In this question, we will compare Lasso and OLS.
+
+Consider a high-dimensional regression model:
+$$
+y_i=\beta_1x_{i1}+\beta_2 x_{i2}+...+\beta_{p}x_{ip}+\varepsilon_{i},\ i=1,2,...,n.
+$$
+We consider the case when $p=100$ and $n=1000$. In the simulation study, we set $\beta_1=\beta_3=\beta_{5}=...=\beta_{19}=1$, $\beta_2=\beta_4=...=\beta_{20}=-1$ and $\beta_{21}=...=\beta_{100}=0$. That is, there are only 20 variables can affect $y$, we call them "signal", while other 80 variables are "noise". To find signals, we denote $H^{j}_{0}:\beta_j=0$. For every $H^{j}_{0}$, we conduct hypothesis test and decide we will accept or reject it. If we reject $\beta_j=0$, we say we have a "*discovery*" or we find a signal.(That is often what we hope in empirical analysis, we say $x_j$ can "significant" affect y) If a variable $x_i$ is in fact a noise, but we reject $\beta_i=0$, then this is a "**false discovery**". 
+
+Now we simulate $x_{ip}\sim N(0,1)$ and $\varepsilon_i\sim N(0,1)$.
+```{r}
+set.seed(1234)
+p = 100
+n = 1000
+X = matrix(0,n,p)
+eps = rnorm(n)
+for (j in c(1:p)) {
+  X[,j] = rnorm(n)
+}
+beta = c(c(1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1),rep(0,80))
+Y = X%*%beta + eps
+```
+
+Then we split the sample into traing set and test set
+
+```{r}
+Y_train = Y[1:800]
+X_train = X[1:800,]
+Y_test = Y[801:1000]
+X_test = X[801:1000,]
+```
+
+
+(1) Under the training set, use `lm()` to fit Y on X (no intercept).For every $H^{j}_{0}$, we use simple t test and get a p-value $p_j$, then we reject $H^{j}_{0}$ if $p_j<\alpha=0.05$. How many signals do you find? What is the *false discovery propotion*? (Hints: FDP, the number of false discovery/the number of discovery)
+
+(2)  In this simulation study, there are $p=100$ parameters will be tested, which is call multiple hypothesis. Under multiple hypothesis, another rejection rule is: reject  $H^{j}_{0}$ if $p_j<\alpha/p=0.005$. This method is called Bonferroni correction. Under Bonferroni's rejection rule, how many signals do you find? What is the *false discovery propotion*? Dose Bonferroni's rejection rule performs better than (1)?
+
+
+(3) Now we turn to Lasso. Set `lambda_try = 10 ^ seq(-3, 5, length.out = 100)` and use 10-fold cross validation to select lambda. Plot cross-validation results and report your result. How many variables are selected out by Lasso?
+
+
+(4) Now we have 4 models(OLS with all 100 variables, OLS with variables selected by t test, OLS with variables selected by Bonferroni, Lasso). Check out-of-sample performance of these models on the test set. Report the out-of-sample MSE of these models and explain your results briefly.
+

@@ -2,6 +2,16 @@
 
 google <- as.Date("09,27,1998",
                   format = "%m, %d, %Y")
+# I-12 yxc
+ford = data.frame(
+  date = as.Date(c("8/8/2016", "8/9/2016", "8/10/2016"), format = "%m/%d/%Y"),
+  close = c(11.39, 11.51, 11.46),
+  volume = c(35563393, 32122187, 26218354)
+)
+
+# ford$high <- ford$close \> 11.50 
+#It's been proven that this line is not right.
+print(ford)
 
 # I-12
 ford = data.frame(
@@ -11,6 +21,18 @@ ford = data.frame(
 )
 
 ford$high <- ford$close >= 11.50
+print(ford)
+
+# I-13 yxc
+jellybean <- 17
+repeat {
+  jellybean <- jellybean + 17
+  print(jellybean)
+  if (jellybean > 60) {
+    print("Cup overflowed")
+    break
+  }
+}
 
 # I-13
 jellybean <- 17
