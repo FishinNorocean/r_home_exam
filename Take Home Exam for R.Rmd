@@ -24,7 +24,7 @@ Please write your answer of Part I here.
 
 12. high >=
 
-13. while(TRUE) break # or you can use `repeat` instead of `while(TRUE)`
+13. repeat break
 
 14. set.seed rnorm df_train summary
 
