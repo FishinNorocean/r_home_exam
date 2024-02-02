@@ -69,6 +69,8 @@ print(paste("Without White standard error, the t value of b_hat in model 2 is : 
 
 ### Answers in natural language
 
+#### Plz check my Rmd file for this part.
+
 cat('\nAnswers in natural language:\nEven though the t-value of model 2 is much less with White standard error, both t-values are big enough to reject null hypothesis under alpha = 0.05.\nUnder heteroskedastical circumstances, we\'ll get a bias on estimating the SE of coefficients, further a bad t-test. Under current setting, as error variance goes up with |x|, se_1 in model 2 is higher than se_0. While we obtain homoskedasticity in model 1, then se_0 and se_1 are almost the same.\n')
 
 ## (3)

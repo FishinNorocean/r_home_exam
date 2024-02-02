@@ -83,18 +83,158 @@ $$\text{Model 2(Heteroskedasticity):}\ y_{2i}=a+bx_i+u_{2i},\ i=1,2,...,n$$
 
 Draw scatter plots for $y_1-x$ and $y_2-x$ respectively.
 
+```{r}
+## setup
+
+library(ggplot2)
+library(tibble)
+
+## basic variable definition
+N <- 1000
+x <- rnorm(N)
+u1 <- rnorm(N)
+u2 <- sapply(x, function(xi){rnorm(1,sd = abs(xi))})
+a <- 1
+b <- 2
+
+### Model 1 & 2:
+y1 <- a + b * x + u1
+df_Model_1 <- tibble(y = y1, x)
+y2 <- a + b * x + u2
+df_Model_2 <- tibble(y = y2, x)
+
+### draw plots respectively
+ggplot(df_Model_1, aes(x, y)) +
+  geom_point() +
+  labs(x = 'x', y = 'y1')
+ggplot(df_Model_2, aes(x, y)) +
+  geom_point() +
+  labs(x = 'x', y = 'y2')
+```
+
 
 (2) (Write a function to implement simple regression) Write a function `reg(x,y,n)`. Input data $x, y$ and sample size $n$, this function should return $\hat{a},\hat{b},\hat{\sigma}^2,se_0(\hat{b})$ and $se_1(\hat{b})$. Use your `reg` function to run regression for `y1~x` and `y2~x`. Compare your result with `lm` function in base `R`. Can you reject the null hypothesis $b=0$? What is the difference between $se_0$ and $se_1$?
+
+```{r}
+### funciton construction
+
+reg <- function(x, y, n){
+  df = tibble(x,y)
+  x_bar <- mean(x)
+  y_bar <- mean(y)
+  SST <- sum((df$x - x_bar)^2)
+  # coefficients calculation
+  b_hat <- sum((df$y - y_bar) * (df$x - x_bar)) / SST
+  a_hat <- y_bar - b_hat * x_bar
+  sigma_hat_square = sum((df$y - a_hat - b_hat * df$x)^2) / (n -2)
+  se_b_hat_0 <- sqrt(sigma_hat_square / SST)
+  se_b_hat_1 <- sqrt(sum((df$x - x_bar)^2 * (df$y - a_hat - b_hat * df$x)^2) / SST^2)
+  
+  result <- c(b_hat, a_hat, sigma_hat_square, se_b_hat_0, se_b_hat_1)
+  names(result) = c('b_hat', 'a_hat',  'sigma_hat^2', 'se_0', 'se_1')
+  return(result)
+}
+
+### reg and compare
+reg_Model_1 <- reg(x, y1, N)
+print('Model_1:')
+print(reg_Model_1)
+lm_Model_1 <- lm(y1 ~ x)
+summary(lm_Model_1)
+
+reg_Model_2 <- reg(x, y2, N)
+print('Model_2:')
+print(reg_Model_2)
+lm_Model_2 <- lm(y2 ~ x)
+summary(lm_Model_2)
+
+t_value_1 <- reg_Model_1["b_hat"] / reg_Model_1["se_0"]
+print(paste("Without White standard error, the t value of b_hat in model 1 is : ", t_value_1))
+
+t_value_2 <- reg_Model_2["b_hat"] / reg_Model_2["se_1"]
+t_value_2_no <- reg_Model_2["b_hat"] / reg_Model_2["se_0"]
+print(paste("With White standard error, the t value of b_hat in model 2 is : ", t_value_2))
+print(paste("Without White standard error, the t value of b_hat in model 2 is : ", t_value_2_no))
+```
+
+对于同方差假设不成立的模型2,尽管利用怀特稳健标准误计算的t-统计量要比一般标准误算出来的要小的多，但是模型1和2的t-统计量值（无论是否使用了怀特标准误），都足够大到在0.05的水平下拒绝零假设。
+
+当存在异方差的时候，如果使用$se_0$，那么我们对于系数估计量的方差的估计会产生偏误，造成t检验的结论不可靠。在本题模型2的情况中，误差项的方差随着自变量绝对值的增加而增大，$se_1$要大于$se_0$。然而当不存在异方差的时候，模型1的$se_0$和$se_1$并没有明显的差别。总而言之，使用一般的方法进行估计会更加方便，而用怀特标准误进行估计以及检验在异方差存在的情况下会更加准确。
+
+Although in model 2 where heteroskedasticity holds, $se_0$ is much more smaller than $se_1$, t-values of both models, no matter which standard error is applied, are big enough to reject the null hypothesis at the level of 0.05.
+
+When heteroskedasticity holds, we'll get a bias estimating the standard error of coefficients, further a bad t-test. As the variance of error term goes up with the absolute value of $x$ in model 2, we can observe a bigger $se_1$ than $se_2$. In contrast, there is no big difference between them in model 1. In a word, the usual standard error method is more convenient, while it's more appropriate to apply White's method when heteroskedasticity holds.
 
 
 (3) (Hypothesis testing under homoskedasticity) Now write a loop. In every step, generate $x=(x_1,...,x_n)$ and $u_1=(u_{11},...,u_{1n})$ with sample size $n=1000$, $x_i\sim N(0,1)$ and $u_{1i}\sim N(0,1)$ , then use $y_{1i}=1+u_{1i}$ to generate $y_1=(y_{11},...,y_{1n})$(That is, the null hypothesis $b=0$ is true).  Use $t_0=\hat{b}/se_0(\hat{b})$ and $t_1=\hat{b}/se_1(\hat{b})$ to test the null hypothesis $b=0$ respectively. Repeat this process for $M=10000$ times. Please report the proportion of rejecting the null hypothesis $b=0$ for these two different tests. (Hints: you should get two vectors `t0` and `t1` of length $M=10000$. `t0` and `t1` record $t_0$ and $t_1$ values for 10000 simulations. Then compare them with the critical value 1.96, you will get the proportion) 
 
+```{r}
+simulate_t_homo <- function(choice){
+  N <- 1000
+  x <- rnorm(N)
+  u1 <- rnorm(N)
+  y1 <- u1 + 1
+  reg_rslt <- reg(x, y1, N)
+  if (choice == 0) {
+    t_value <- reg_rslt["b_hat"] / reg_rslt["se_0"]
+  } else if (choice == 1) {
+    t_value <- reg_rslt["b_hat"] / reg_rslt["se_1"]
+  } else {
+    t_value <- NA
+  }
+  return(sum(t_value))
+}
+
+t0 <- replicate(10000, simulate_t_homo(0))
+t0_bool <- abs(t0) > 1.96
+t0_reject_proportion <- sum(t0_bool) / 10000
+t1 <- replicate(10000, simulate_t_homo(1))
+t1_bool <- abs(t1) > 1.96
+t1_reject_proportion <- sum(t1_bool) / 10000
+
+print(paste('The proportion of rejecting the null hypothesis using t0 is ', t0_reject_proportion))
+print(paste('The proportion of rejecting the null hypothesis using t1 is ', t1_reject_proportion))
+```
+
 
 (4) (Study the size distortion under heteroskedasticity) Repeat what you do in (3), but now use $u_{2i}\sim N(0,x_i^2)$. That is, in every step, generate $x=(x_1,...,x_n)$ and $u_2=(u_{21},...,u_{2n})$ with sample size $n=1000$, $x_i\sim N(0,1)$ and $u_{2i}\sim N(0,x_i^2)$ , then use $y_{2i}=1+u_{2i}$ to generate $y_2=(y_{21},...,y_{2n})$(That is, the null hypothesis $b=0$ is true).  Use $t_0=\hat{b}/se_0(\hat{b})$ and $t_1=\hat{b}/se_1(\hat{b})$ to test the null hypothesis $b=0$ respectively. Repeat this process for $M=10000$ times. Please report the proportion of rejecting the null hypothesis $b=0$ for these two different tests.
 
+```{r}
+simulate_t_hetero <- function(choice){
+  N <- 1000
+  x <- rnorm(N)
+  u2 <- sapply(x, function(xi){rnorm(1,sd = abs(xi))})
+  y2 <- u2 + 1
+  reg_rslt <- reg(x, y2, N)
+  if (choice == 0) {
+    t_value <- reg_rslt["b_hat"] / reg_rslt["se_0"]
+  } else if (choice == 1) {
+    t_value <- reg_rslt["b_hat"] / reg_rslt["se_1"]
+  } else {
+    t_value <- NA
+  }
+  return(sum(t_value))
+}
+
+t0 <- replicate(10000, simulate_t_hetero(0))
+t0_bool <- abs(t0) > 1.96
+t0_reject_proportion <- sum(t0_bool) / 10000
+t1 <- replicate(10000, simulate_t_hetero(1))
+t1_bool <- abs(t1) > 1.96
+t1_reject_proportion <- sum(t1_bool) / 10000
+
+print(paste('The proportion of rejecting the null hypothesis using t0 is ', t0_reject_proportion))
+print(paste('The proportion of rejecting the null hypothesis using t1 is ', t1_reject_proportion))
+```
 
 
 (5) Compare your result in (3) and (4). Under homoskedasticity, are these two standard errors perform similar? Under heteroskedasticity, which performs better? In application, if you are not sure whether the model is heteroskedasticity, which standard error should we use?
+
+我们可以发现，无论是哪种方法，对于模型1来说并没有什么差别，t统计量都很好地做到了犯第二类错误的概率为0.05。也就是说，在同方差的情况下，两种方法都正常地发挥了作用。但是在存在异方差的时候，也就是模型2中，只有怀特标准误的方法比较好的发挥了作业，也就是犯第二类错误的概率是0.05。
+如果我不确定模型是否具有异方差性，两种方法我都会使用，如果两者得到的结果没有明显差异，那么我会认为同方差的假设是合理的，如果两者出现了明显的差异，那么我会认为存在异方差性，进而把怀特标准误方法得到的检验结果作为合理的参照。
+
+We can find that both methods work out well in model 1, i.e. the probability to reject the null hypothesis when it's actually true is merely 0.05. However, only White's method works out well in model 2 when heteroskedasticity holds.
+If I'm not sure whether there is a heteroskedasticity problem, I'll apply both methods. If the result shows no big difference, I will consider the homoskedastical assumption is reasonale and report both of them. While if the result is not so, White's result would be considered a more reasonale one.
 
 \newpage
 ## Question 2. Ploting and Classification: Legendary Pokémon

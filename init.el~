@@ -1,0 +1,147 @@
+;; Elisp file of swk
+
+
+;; current condition:
+;; initialise
+;; company
+;; basic R
+;; auctex
+;; spelling check
+;; custom setting
+
+
+
+
+
+;;; code:
+
+
+;;; basic
+(package-refresh-contents)
+
+;; Add MELPA repository and initialise the package manager
+(require 'package)
+(add-to-list 'package-archives
+             '("melpa" . "https://melpa.org/packages/"))
+(package-initialize)
+
+;; Install use-package,in case it does not exist yet
+;; The use-package software will install all other packages as required
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+
+(electric-pair-mode t)                       ; 自动补全括号
+(add-hook 'prog-mode-hook #'show-paren-mode) ; 编程模式下，光标在括号上时高亮另一个括号
+(column-number-mode t)                       ; 在 Mode line 上显示列号
+(global-auto-revert-mode t)                  ; 当另一程序修改了文件时，让 Emacs 及时刷新 Buffer
+(delete-selection-mode t)                    ; 选中文本后输入文本会替换文本（更符合我们习惯了的其它编辑器的逻辑）
+(setq inhibit-startup-message t)             ; 关闭启动 Emacs 时的欢迎界面
+(setq make-backup-files nil)                 ; 关闭文件自动备份
+(add-hook 'prog-mode-hook #'hs-minor-mode)   ; 编程模式下，可以折叠代码块
+(global-display-line-numbers-mode 1)         ; 在 Window 显示行号
+(tool-bar-mode -1)                           ; （熟练后可选）关闭 Tool bar
+(when (display-graphic-p) (toggle-scroll-bar -1)) ; 图形界面时关闭滚动条
+
+
+;; 快速打开配置文件
+(defun open-init-file()
+  (interactive)
+  (find-file "~/.emacs.d/init.el"))
+
+
+
+;;; complete any
+(use-package company
+  :ensure t
+  :init (global-company-mode)
+  :config
+  (setq company-minimum-prefix-length 2) ; 只需敲 2 个字母就开始进行自动补全
+  (setq company-tooltip-align-annotations t)
+  (setq company-idle-delay 0.0)
+  (setq company-show-quick-access t) ;; 给选项编号 (按快捷键 M-1、M-2 等等来进行选择).
+  (setq company-selection-wrap-around t)
+  (setq company-transformers '(company-sort-by-occurrence))) ; 根据选择的频率进行排序，读者如果不喜欢可以去掉
+
+
+(use-package company-box
+  :ensure t
+  :if window-system
+  :hook (company-mode . company-box-mode))
+
+
+
+;;; lsp
+
+(use-package lsp-mode
+  :ensure t
+  :init
+  ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
+  (setq lsp-keymap-prefix "C-c l"
+	lsp-file-watch-threshold 500)
+  :hook 
+  (lsp-mode . lsp-enable-which-key-integration) ; which-key integration
+  :commands (lsp lsp-deferred)
+  :config
+;; (setq lsp-completion-provider :none) ;; 阻止 lsp 重新设置 company-backend 而覆盖我们 yasnippet 的设置
+  (setq lsp-headerline-breadcrumb-enable t)
+  :bind
+  ("C-c l s" . lsp-ivy-workspace-symbol)) ;; 可快速搜索工作区内的符号（类名、函数名、变量名等）
+
+;;; R
+
+;; ESS configurationEmacs Speaks Statistics
+(use-package ess
+  :ensure t
+)
+
+;; Auto completion
+(use-package company
+  :ensure t
+  :config
+  (setq company-idle-delay 0)
+  (setq company-minimum-prefix-length 2)
+  (global-company-mode t)
+)
+
+; Parentheses
+(use-package highlight-parentheses
+  :ensure t
+  :config
+  (progn
+    (highlight-parentheses-mode)
+    (global-highlight-parentheses-mode))
+  )
+
+
+;;; auctex
+(use-package tex
+  :ensure auctex)
+
+(use-package company-auctex
+  :ensure t
+  )
+
+(company-auctex-init)
+
+;;; spelling check
+(use-package flycheck
+  :ensure t
+  :hook                        ; 为模式设置 hook
+  (prog-mode . flycheck-mode))
+
+;; custom-setting
+
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   '(company-auctex lsp-mode company-box auctex highlight-parentheses company ess)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
