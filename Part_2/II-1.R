@@ -27,8 +27,8 @@ scat_Model_1 <- ggplot(df_Model_1, aes(x, y)) +
 scat_Model_2 <- ggplot(df_Model_2, aes(x, y)) +
   geom_point() +
   labs(x = 'x', y = 'y2')
-ggsave(scat_Model_1, filename = 'Part_II/Question_1/scat_Model_1.png')
-ggsave(scat_Model_2, filename = 'Part_II/Question_1/scat_Model_2.png')
+ggsave(scat_Model_1, filename = 'output/Q1_1_scat_Model_1.png')
+ggsave(scat_Model_2, filename = 'output/Q1_1_scat_Model_2.png')
 
 ## (2)
 
@@ -70,8 +70,6 @@ print(paste("Without White standard error, the t value of b_hat in model 2 is : 
 ### Answers in natural language
 
 #### Plz check my Rmd file for this part.
-
-cat('\nAnswers in natural language:\nEven though the t-value of model 2 is much less with White standard error, both t-values are big enough to reject null hypothesis under alpha = 0.05.\nUnder heteroskedastical circumstances, we\'ll get a bias on estimating the SE of coefficients, further a bad t-test. Under current setting, as error variance goes up with |x|, se_1 in model 2 is higher than se_0. While we obtain homoskedasticity in model 1, then se_0 and se_1 are almost the same.\n')
 
 ## (3)
 
@@ -131,4 +129,4 @@ print(paste('The proportion of rejecting the null hypothesis using t1 is ', t1_r
 
 ## (5)
 
-# check my rmd or pdf file for non-code answers.
+# check my rmd, pdf or html file for non-code answers.
