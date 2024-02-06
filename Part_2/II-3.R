@@ -22,39 +22,18 @@ ggsave(VIX_date_plot, filename = 'output/Q3_1_VIX_Date_plot.png', width = 8, hei
 
 # transform the data to time series
 ts_source <- ts(df_source$VIX)
-
-# generate overall `y` and `X` to be indexed
-vec_ts <- as.vector(ts_source)
-df_ts_with_lag <- data.frame(
-  "VIX" = vec_ts
+num <- length(ts_source)
+model <- ar(ts_source, order.max = 22, method = "ols")
+IC_values <- data.frame(
+  order = 1:22,
+  AIC = model$aic[2:23],
+  BIC = numeric(22)
 )
-for (i in 1:22) {
-  df_ts_with_lag[,paste0("lag", i)] = lag(vec_ts, i)
-}
-overall_y <- df_ts_with_lag %>%
-  select(VIX) %>% 
-  scale(center = TRUE, scale = FALSE) %>% 
-  as.matrix()
-overall_X <- df_ts_with_lag %>% 
-  select(-VIX) %>% 
-  as.matrix()
+IC_values$BIC <- IC_values$AIC + (log(num) - 2) * IC_values$order
 
-# table to record the ICs
-IC_table <- data.frame(matrix(ncol = 3, nrow = 22))
-colnames(IC_table) <- c("Model", "AIC", "BIC")
+write.csv(IC_values, "output/Q_2_AR_IC.csv")
 
-for (mx_lag in 1:22) {
-  y <- overall_y[(1 + mx_lag):nrow(overall_y),]
-  X <- overall_X[(1 + mx_lag):nrow(overall_X), 1:mx_lag]
-  model <- lm(y~X)
-  IC_table[mx_lag, "AIC"] <- AIC(model)
-  IC_table[mx_lag, "BIC"] <- BIC(model)
-}
-IC_table[, "Model"] <- c(paste0("AR(", 1:22, ")"))
-
-#we can get aic values for all order <= 22 from ar(), but the values are adjusted and the minimal aic value is set to 0.
-#ic_values <- ar_model$aic
-#bic-values <- 
+cat(paste0("From the data we can find out that under AIC, AR(", which.min(IC_values$AIC), ") is the best, while under BIC, AR(", which.min(IC_values$BIC), ") is the best.\n"))
 
 
 # (3)
@@ -85,6 +64,22 @@ write.csv(mean_error, file = "output/Q3_3_autoreg_error.csv",
           row.names = FALSE)
 
 # (4)
+
+# generate overall `y` and `X` to be indexed
+vec_ts <- as.vector(ts_source)
+df_ts_with_lag <- data.frame(
+  "VIX" = vec_ts
+)
+for (i in 1:22) {
+  df_ts_with_lag[,paste0("lag", i)] = lag(vec_ts, i)
+}
+overall_y <- df_ts_with_lag %>%
+  select(VIX) %>% 
+  scale(center = TRUE, scale = FALSE) %>% 
+  as.matrix()
+overall_X <- df_ts_with_lag %>% 
+  select(-VIX) %>% 
+  as.matrix()
 
 # again another error table
 RL_error_table <- data.frame(matrix(ncol = 8, nrow = 0))
