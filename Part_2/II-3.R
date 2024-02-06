@@ -14,7 +14,8 @@ colnames(df_source) <- c("date", "VIX")
 df_source$date <- as.Date(df_source$date, format = "\'%Y-%m-%d\'")
 
 # plot
-VIX_date_plot <- ggplot(df_source, aes(date, VIX)) + geom_line() + 
+VIX_date_plot <- ggplot(df_source, aes(date, VIX)) + 
+  geom_line(color = "lightblue") + 
   labs(title = "VIX and Date Variation", x = 'Date', y ='VIX')
 ggsave(VIX_date_plot, filename = 'output/Q3_1_VIX_Date_plot.png', width = 8, height = 4)
 
@@ -31,7 +32,7 @@ IC_values <- data.frame(
 )
 IC_values$BIC <- IC_values$AIC + (log(num) - 2) * IC_values$order
 
-write.csv(IC_values, "output/Q_2_AR_IC.csv")
+write.csv(IC_values, "output/Q3_2_AR_IC.csv")
 
 cat(paste0("From the data we can find out that under AIC, AR(", which.min(IC_values$AIC), ") is the best, while under BIC, AR(", which.min(IC_values$BIC), ") is the best.\n"))
 

@@ -125,7 +125,7 @@ is_legen_tree_text <- rpart(is_legendary ~  attack + defense + height_m + hp +
                          sp_attack + sp_defense + speed + type + weight_kg, 
                        data = pokedex_train_text, method = "class")
 png("output/Q2_3_3_tree_plot.png", width = 600, height = 600)
-rpart.plot(is_legen_tree_text)
+rpart.plot(is_legen_tree_text, box.palette = "-BuOr") 
 dev.off()
 
 # Check my explanation on my rmd
