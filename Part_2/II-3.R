@@ -3,8 +3,10 @@
 # set up
 rm(list = ls())
 library(ggplot2)
+library(glmnet)
+library(dplyr)
 
-#(1)
+# (1)
 
 # data load and pre-process
 df_source <- read.csv('data/vixlarge.csv', header = FALSE, sep = ',')
@@ -15,3 +17,124 @@ df_source$date <- as.Date(df_source$date, format = "\'%Y-%m-%d\'")
 VIX_date_plot <- ggplot(df_source, aes(date, VIX)) + geom_line() + 
   labs(title = "VIX and Date Variation", x = 'Date', y ='VIX')
 ggsave(VIX_date_plot, filename = 'output/Q3_1_VIX_Date_plot.png', width = 8, height = 4)
+
+# (2)
+
+# transform the data to time series
+ts_source <- ts(df_source$VIX)
+
+# generate overall `y` and `X` to be indexed
+vec_ts <- as.vector(ts_source)
+df_ts_with_lag <- data.frame(
+  "VIX" = vec_ts
+)
+for (i in 1:22) {
+  df_ts_with_lag[,paste0("lag", i)] = lag(vec_ts, i)
+}
+overall_y <- df_ts_with_lag %>%
+  select(VIX) %>% 
+  scale(center = TRUE, scale = FALSE) %>% 
+  as.matrix()
+overall_X <- df_ts_with_lag %>% 
+  select(-VIX) %>% 
+  as.matrix()
+
+# table to record the ICs
+IC_table <- data.frame(matrix(ncol = 3, nrow = 22))
+colnames(IC_table) <- c("Model", "AIC", "BIC")
+
+for (mx_lag in 1:22) {
+  y <- overall_y[(1 + mx_lag):nrow(overall_y),]
+  X <- overall_X[(1 + mx_lag):nrow(overall_X), 1:mx_lag]
+  model <- lm(y~X)
+  IC_table[mx_lag, "AIC"] <- AIC(model)
+  IC_table[mx_lag, "BIC"] <- BIC(model)
+}
+IC_table[, "Model"] <- c(paste0("AR(", 1:22, ")"))
+
+#we can get aic values for all order <= 22 from ar(), but the values are adjusted and the minimal aic value is set to 0.
+#ic_values <- ar_model$aic
+#bic-values <- 
+
+
+# (3)
+
+# a vacant table to record the model performance.
+error_table <- data.frame(matrix(ncol = 44, nrow = 0))
+colnames(error_table) <- c(paste0("sqr_AR", 1:22), paste0("abs_AR", 1:22))
+
+for (mx_lag in 1:22) {
+  for (stt in 1:(length(ts_source) - 3000)) {
+    wd <- ts_source[stt:(stt + 2999)]
+    model <- ar(wd, order.max = mx_lag, method = "ols", aic = F)
+    pred <- predict(model, n.ahead = 1)
+    bias <- ts_source[stt + 3000] - as.numeric(pred$pred)
+    error_table[stt, mx_lag] <- bias^2
+    error_table[stt, mx_lag + 22] <- abs(bias)
+  }
+}
+
+# calculate mean error
+mean_error <- data.frame(
+  Model = c(paste0("AR(", 1:22, ")")),
+  Mean_Sqr_Error = round(apply(error_table[, 1:22], 2, mean), 7),
+  Mean_Abs_Error = round(apply(error_table[, 23:44], 2, mean), 7),
+  row.names = NULL
+)
+write.csv(mean_error, file = "output/Q3_3_autoreg_error.csv",
+          row.names = FALSE)
+
+# (4)
+
+# again another error table
+RL_error_table <- data.frame(matrix(ncol = 8, nrow = 0))
+model_names <- c("Ridge_1", "Ridge_10", "Lasso_1", "Lasso_10")
+colnames(RL_error_table) <- c(paste0("sqr_", model_names), 
+                              paste0("abs_", model_names))
+
+# start the loop
+alps <- c(0, 0, 1, 1)
+lmbs <- c(1, 10, 1, 10)
+for (i in 1:4) {
+  alp <- alps[i]
+  lmb <- lmbs[i]
+  for (stt in 1:(length(ts_source) - 3000)){
+    y <- overall_y[(stt + 22):(stt + 2999),]
+    X <- overall_X[(stt + 22):(stt + 2999),]
+    model <- glmnet(X, y, alpha = alp, lambda = lmb)
+    pred <- predict(model, newx = overall_X[stt + 3000,], s = lmb)
+    bias <- overall_y[stt + 3000] - pred
+    RL_error_table[stt, i] <- bias^2
+    RL_error_table[stt, i + 4] <- abs(bias)
+  }
+}
+
+# calculate mean error
+RL_mean_error <- data.frame(
+  Model = model_names,
+  Mean_Sqr_Error = round(apply(error_table[, 1:4], 2, mean), 7),
+  Mean_Abs_Error = round(apply(error_table[, 5:8], 2, mean), 7),
+  row.names = NULL
+)
+overall_mean_error <- rbind(mean_error, RL_mean_error)
+write.csv(RL_mean_error, file = "output/Q3_4_RL_autoreg_error.csv",
+          row.names = FALSE)
+write.csv(overall_mean_error, file = "output/Q3_4_overall_error.csv",
+          row.names = FALSE)
+
+# (5)
+mean_MSE_index <- which.min(overall_mean_error$Mean_Sqr_Error)
+mean_MAE_index <- which.min(overall_mean_error$Mean_Abs_Error)
+cat(paste("\nThe model with minimal MSE is",
+          overall_mean_error$Model[mean_MSE_index],
+          "\nThe model with minimal MAE is",
+          overall_mean_error$Model[mean_MAE_index]))
+
+# output 
+# The model with minimal MSE is AR(5) 
+# The model with minimal MAE is AR(2)
+
+# As we can see from the output and the table of Mean Errors, the model with minimal MSE and MAE are AR(5) and AR(2), seperately. However, Ridge and Lasso regularization method didn't improve the performance as we had expected, instead, the MAE and MSE of these models are obviously higher than normal AR(22) model. As i am concerned, no lags should be punished for being non-zero in our model, all lags play a part in determining the future value of VIX and thus no need to punish a coefficient to be non-zero. Therefore, the non-necessary punishment failed the model to perform better, while instead, worse.
+
+
+# 我们可以命令返回的结果以及记录平均误的表格可以的得到，按照 MSE，最好的模型是 AR(5)，按照MAE，最好的模型是AR(2)。然而，Ridge and Lasso 方法并没有如同我们所预料地，改善模型的表现，反而让模型的误差明显大于 AR(22)。我认为，这背后的原因在于，我们的模型中所有的lag都差不多得决定了未来的 VIX 值，于是没有必要惩罚非零参数。因此施加不必要的参数非零惩罚反而使得模型的表现更差了。

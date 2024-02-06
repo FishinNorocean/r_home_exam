@@ -78,8 +78,8 @@ objs <- c("attack","sp_attack","defense","sp_defense","hp","speed")
 
 for (index in objs) {
   plt <- get_box_plot(index)
-  ggsave(plt, filename = paste('output/Q2_2_3/Q2_2_3_', 
-                               toTitleCase(index), '_Boxplot.png',sep = ''))
+  ggsave(plt, filename = paste0('output/Q2_2_3/Q2_2_3_', 
+                               toTitleCase(index), '_Boxplot.png'))
 }
 
 # (3)
@@ -179,3 +179,5 @@ legend("bottomright", legend = c(
 dev.off()
 
 # As we can see from the curve, the Logistic Regression model and Random Forest model performs similarly well according to the AUC, while Decision Tree model is not as good as those two.
+
+# 从图中我们可以发现，依据 AUC 进行判断，逻辑回归模型和随机森林模型表现地都很好，然而决策树模型就不如前两者表现得好。
