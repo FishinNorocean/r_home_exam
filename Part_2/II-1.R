@@ -1,7 +1,7 @@
 # Question 1
 
 ## setup
-
+rm(list = ls())
 library(ggplot2)
 library(tibble)
 
@@ -22,10 +22,10 @@ df_Model_2 <- tibble(y = y2, x)
 
 ### draw plots respectively
 scat_Model_1 <- ggplot(df_Model_1, aes(x, y)) +
-  geom_point() +
+  geom_point(color = "skyblue") +
   labs(x = 'x', y = 'y1')
 scat_Model_2 <- ggplot(df_Model_2, aes(x, y)) +
-  geom_point() +
+  geom_point(color = "skyblue") +
   labs(x = 'x', y = 'y2')
 ggsave(scat_Model_1, filename = 'output/Q1_1_scat_Model_1.png')
 ggsave(scat_Model_2, filename = 'output/Q1_1_scat_Model_2.png')

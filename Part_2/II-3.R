@@ -98,7 +98,7 @@ for (i in 1:4) {
     y <- overall_y[(stt + 22):(stt + 2999),]
     X <- overall_X[(stt + 22):(stt + 2999),]
     model <- glmnet(X, y, alpha = alp, lambda = lmb)
-    pred <- predict(model, newx = overall_X[stt + 3000,], s = lmb)
+    pred <- predict(model, newx = overall_X[stt + 3000,])
     bias <- overall_y[stt + 3000] - pred
     RL_error_table[stt, i] <- bias^2
     RL_error_table[stt, i + 4] <- abs(bias)
@@ -108,8 +108,8 @@ for (i in 1:4) {
 # calculate mean error
 RL_mean_error <- data.frame(
   Model = model_names,
-  Mean_Sqr_Error = round(apply(error_table[, 1:4], 2, mean), 7),
-  Mean_Abs_Error = round(apply(error_table[, 5:8], 2, mean), 7),
+  Mean_Sqr_Error = round(apply(RL_error_table[, 1:4], 2, mean), 7),
+  Mean_Abs_Error = round(apply(RL_error_table[, 5:8], 2, mean), 7),
   row.names = NULL
 )
 overall_mean_error <- rbind(mean_error, RL_mean_error)
