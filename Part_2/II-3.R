@@ -32,14 +32,18 @@ IC_values <- data.frame(
 )
 IC_values$BIC <- IC_values$AIC + (log(num) - 2) * IC_values$order
 
-write.csv(IC_values, "output/Q3_2_AR_IC.csv")
+# Please note that all AIC values calculated by `ar()` have been adjusted: the lowest AIC is set to 0, while all other's values are relative to minimal AIC value. As i calcualted the BIC values from AIC values, all theses values are just realtvie ones. This is why some BIC values are abnoramlly negative.
 
-cat(paste0("From the data we can find out that under AIC, AR(", which.min(IC_values$AIC), ") is the best, while under BIC, AR(", which.min(IC_values$BIC), ") is the best.\n"))
+# 请注意，所有这里的AIC都是被 `ar()` 函数调整过的：最小的AIC值被设为0，其他的AIC值都是相对于最小值的大小，而BIC的值都是我根据AIC的值计算得到的。因此这里所有的值都是相对的值，这也是什么部分BIC出现了负数的原因。
+
+write.csv(IC_values, "output/Q3_2_AR_IC.csv", row.names = FALSE)
+
+cat(paste0("\nFrom the data we can find out that \nwith AIC, AR(", which.min(IC_values$AIC), ") is the best, \nwhile with BIC, AR(", which.min(IC_values$BIC), ") is the best.\n"))
 
 
 # (3)
 
-# a vacant table to record the model performance.
+# a vacant table to record the model performance
 error_table <- data.frame(matrix(ncol = 44, nrow = 0))
 colnames(error_table) <- c(paste0("sqr_AR", 1:22), paste0("abs_AR", 1:22))
 
@@ -126,9 +130,6 @@ cat(paste("\nThe model with minimal MSE is",
           "\nThe model with minimal MAE is",
           overall_mean_error$Model[mean_MAE_index]))
 
-# output 
-# The model with minimal MSE is AR(5) 
-# The model with minimal MAE is AR(2)
 
 # As we can see from the output and the table of Mean Errors, the model with minimal MSE and MAE are AR(5) and AR(2), seperately. However, Ridge and Lasso regularization method didn't improve the performance as we had expected, instead, the MAE and MSE of these models are obviously higher than normal AR(22) model. As i am concerned, no lags should be punished for being non-zero in our model, all lags play a part in determining the future value of VIX and thus no need to punish a coefficient to be non-zero. Therefore, the non-necessary punishment failed the model to perform better, while instead, worse.
 

@@ -28,8 +28,8 @@ sgns <- abs(coef(summ_lm)[, "t value"]) > 1.96
 num_D <- sum(sgns)
 num_FD <- sum(sgns[21:100])
 FDP <- num_FD/num_D
-cat(paste("\nI found", num_D, 
-          "discoveries, among which the FDP is", FDP, '.\n'))
+cat(paste("\n\nI found", num_D, 
+          "signals, of which the FDP is", FDP, '.\n'))
 
 # (2)
 
@@ -38,8 +38,8 @@ num_BC_D <- sum(sgns_BC)
 num_BC_FD <- sum(sgns_BC[21:100])
 FDP_BC <- num_BC_FD/num_BC_D
 cat(paste("\nWith Bonferroni’s rejection rule, I found", num_BC_D, 
-          "discoveries, among which the FDP is", FDP_BC, 
-          ". It did significantly improved the FDP.\n"))
+          "signals, of which the FDP is", FDP_BC, 
+          ". It did significantly improve the FDP.\n"))
 
 
 # (3)
@@ -70,25 +70,19 @@ cat(paste(
   omv_min_num,
   "variables are omitted,",
   100 - omv_min_num,
-  "are validated, if we choose the lambda obtaining minimal MSE,\n",
+  "are validated, if we choose the lambda obtaining minimal MSE(lambda.min),\n",
   omv_1se_num,
   "variables are omitted,",
   100 - omv_1se_num,
-  "are validated, if we choose the lambda within a standard error's distance from minimal MSE while omitting variables as much as it can.\n"
+  "are validated, if we choose the lambda within a standard error's distance from minimal MSE while omitting variables as much as it can(lambda.1se).\n"
 ))
 
-# output
-# With lasso, 
-# 48 variables are omitted, 52 are validated, if we choose the lambda obtaining minimal MSE,
-# 75 variables are omitted, 25 are validated, if we choose the lambda within a standard error's distance from minimal MSE while omitting variables as much as it can.
 
 # (4)
 
 
-MSE_test_table <- data.frame(
-  Model_name = NULL,
-  Tset_MSE = NULL
-)
+MSE_test_table <- data.frame(matrix(NA,5,2))
+colnames(MSE_test_table) <- c("Model_name", "Test_MSE")
 omv_all <- c(rep(FALSE, 100))
 omv_t <- ! sgns
 omv_B <- ! sgns_BC
@@ -107,6 +101,7 @@ for (i in 1:length(models)) {
   MSE_test_table[i, 2] <- MSE
 }
 
-write.csv(MSE_test_table, file = "output/Q4_4_test_MSE.csv")
+MSE_test_table$Test_MSE <- round(MSE_test_table$Test_MSE, 7)
+write.csv(MSE_test_table, file = "output/Q4_4_test_MSE.csv", row.names = F)
 
 # As we can see from the report table, t-selection method has minimal MSE while ordinary no-selection model has maximal MSE. With Lasso selection, lambda.min method doesn't work as good as lambda.1se method, as it has more false positive variables included. Lasso with lambda.1se method does performs better than B-selection method, it's still not as good as t-selection method in our simulation.

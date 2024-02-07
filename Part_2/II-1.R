@@ -7,6 +7,7 @@ library(tibble)
 
 ## (1)
 
+set.seed(1234)
 N <- 1000
 x <- rnorm(N)
 u1 <- rnorm(N)
@@ -45,8 +46,8 @@ reg <- function(x, y, n){
   sigma_hat_square = sum((df$y - a_hat - b_hat * df$x)^2) / (n -2)
   se_b_hat_0 <- sqrt(sigma_hat_square / SST)
   se_b_hat_1 <- sqrt(sum((df$x - x_bar)^2 * (df$y - a_hat - b_hat * df$x)^2) / SST^2)
-  result <- c(b_hat, a_hat, sigma_hat_square, se_b_hat_0, se_b_hat_1)
-  names(result) = c('b_hat', 'a_hat',  'sigma_hat^2', 'se_0', 'se_1')
+  result <- c(a_hat, b_hat, sigma_hat_square, se_b_hat_0, se_b_hat_1)
+  names(result) = c('a_hat', 'b_hat',  'sigma_hat^2', 'se_0', 'se_1')
   return(result)
 }
 
