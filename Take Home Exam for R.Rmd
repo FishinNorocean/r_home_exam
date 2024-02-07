@@ -119,7 +119,7 @@ df_Model_2 <- tibble(y = y2, x)
 (2) (Write a function to implement simple regression) Write a function `reg(x,y,n)`. Input data $x, y$ and sample size $n$, this function should return $\hat{a},\hat{b},\hat{\sigma}^2,se_0(\hat{b})$ and $se_1(\hat{b})$. Use your `reg` function to run regression for `y1~x` and `y2~x`. Compare your result with `lm` function in base `R`. Can you reject the null hypothesis $b=0$? What is the difference between $se_0$ and $se_1$?
 
 ```{r}
-# funciton construction
+# function construction
 
 reg <- function(x, y, n){
   df = tibble(x,y)
@@ -232,11 +232,11 @@ We can find that both methods work out well in model 1, i.e. the probability to 
 
 However, only White's method works out well in model 2 when heteroskedasticity holds.
 
-If I'm not sure whether there is a heteroskedasticity problem, I'll apply both methods. If the result shows no big difference, I will consider the homoskedastical assumption is reasonale and report both of them. While if the result is not so, White's result would be considered a more reasonale one.
+If I'm not sure whether there is a heteroskedasticity problem, I'll apply both methods. If the result shows no big difference, I will consider the homoskedastical assumption is reasonable and report both of them. While if the result is not so, White's result would be considered a more reasonable one.
 
 我们可以发现，无论是哪种方法，对于模型1来说并没有什么差别，t统计量都很好地做到了犯第二类错误的概率为0.05。也就是说，在同方差的情况下，两种方法都正常地发挥了作用。
 
-但是在存在异方差的时候，也就是模型2中，只有怀特标准误的方法比较好的发挥了作业，也就是犯第二类错误的概率是0.05。
+但是在存在异方差的时候，也就是模型2中，只有怀特标准误的方法比较好的发挥了作用，也就是犯第二类错误的概率是0.05。
 
 如果我不确定模型是否具有异方差性，两种方法我都会使用，如果两者得到的结果没有明显差异，那么我会认为同方差的假设是合理的，如果两者出现了明显的差异，那么我会认为存在异方差性，进而把怀特标准误方法得到的检验结果作为合理的参照。
 
@@ -349,7 +349,7 @@ for (index in objs) {
 
 (3) As we might expect, legendary Pokémon outshine their ordinary counterparts in height, weight and all fighter stats. What's more, Pokémon's type may also have effect on its legendary/non-legendary classification. Now we consider these factors together to predict whether a Pokémon is legendary.
 
-* (i) Before fitting our model, we will split the `pokedex` into a training set (`pokedex_train`) and a test set (`pokedex_test`). We have generate the rows for training set. Please complete the following code to create a training/test split. Note that there are some rows with `NA` in the test set. Please replace `NA`s in test set with the mean of coresponding colunm in test set. (e.g., if there is a NA in column `height_m`, then you calculate the mean of this column in test set, and replace NA with this mean)
+* (i) Before fitting our model, we will split the `pokedex` into a training set (`pokedex_train`) and a test set (`pokedex_test`). We have generate the rows for training set. Please complete the following code to create a training/test split. Note that there are some rows with `NA` in the test set. Please replace `NA`s in test set with the mean of corresponding column in test set. (e.g., if there is a NA in column `height_m`, then you calculate the mean of this column in test set, and replace NA with this mean)
 
 ```{r}
 # Set seed for reproducibility
@@ -405,7 +405,7 @@ Explanation 解释 :
 
 As we can see from the plot, the tree classified the data through `height_m, hp, sp_defense, sp_attack, attack, type` variables. Pokemons with ordinary `height_m, sp_defense, sp_attack` can be predicted as ordinary, making up 84% of all. In short, pokemons with outstanding height and fight stats tend to be legendary, vice versa. 
 
-我们可以从图中看到，decision tree 通过 `height_m, hp, sp_defense, sp_attack, attack, type` 等变量进行了决策，其中身高、sp攻防不出色的宝可梦就被预测为一般宝可梦，占到了所有种类的84%。总而言之，拥有出众的身高、攻击数据的宝可梦更有可能是神兽，反之亦然。
+我们可以从图中看到，decision tree 通过 `height_m, hp, sp_defense, sp_attack, attack, type` 等变量进行了决策，其中身高、sp攻防不出色的宝可梦就被预测为一般宝可梦，占到了所有种类的84%。总而言之，拥有出众的身高、攻击数据的宝可梦更有可能是神兽，反之则更加可能是普通宝可梦。
 
 * (iv) Decision trees are unstable and sensitive to small variations in the data. Now fit a random forest on the training set `pokedex_train` and print model output.
 
@@ -495,7 +495,7 @@ $$
 where $u_{t}$ is the error term. But to capture long-range dependence might entail $J=10$ $J=20,$ or higher. Let the dependent variable $y$ be the VIX and the first and the 2nd to 23th columns of the independent variable $X$ be the intercept term and the 1-22 lag of VIX. Write your own code to implement AR(1) to AR(22) model, and pick out the best model by AIC and BIC, are the results same, generate a table to illustrate your results? if not, why?
 
 ```{r}
-# Please note that all AIC values calculated by `ar()` have been adjusted: the lowest AIC is set to 0, while all other's values are relative to minimal AIC value. As i calcualted the BIC values from AIC values, all theses values are just realtvie ones. This is why some BIC values are abnoramlly negative.
+# Please note that all AIC values calculated by `ar()` have been adjusted: the lowest AIC is set to 0, while all others' values are relative to minimal AIC value. As i calculated the BIC values from AIC values, all theses values are just relative ones. This is why some BIC values are abnormally negative.
 
 # 请注意，所有这里的AIC都是被 `ar()` 函数调整过的：最小的AIC值被设为0，其他的AIC值都是相对于最小值的大小，而BIC的值都是我根据AIC的值计算得到的。因此这里所有的值都是相对的值，这也是什么部分BIC出现了负数的原因。
 
@@ -515,9 +515,9 @@ print(IC_values)
 print(paste0("From the data we can find out that with AIC, AR(", which.min(IC_values$AIC), ") is the best, while with BIC, AR(", which.min(IC_values$BIC), ") is the best."))
 ```
 
-We can find the optimal models are not the same here. This is beacuse AIC and BIC have different punishment for more lags. Here the punishment coefficient of BIC is much bigger($log(6863) > 2$), thus less lags are chosen in BIC optimal model.
+We can find the optimal models are not the same here. This is because AIC and BIC have different punishment for more lags. Here the punishment coefficient of BIC is much bigger($\log(6863) > 2$), thus less lags are chosen in BIC optimal model.
 
-我们可以发现结果是不一样的，用AIC选出了AR(15)，用BIC选出了AR(11)，这是由于AIC和BIC的对于lag数量的惩罚不同导致的，此处BIC对于lag的惩罚系数大的多（$log(6863) > 2$），因此BIC下的最优阶数比AIC要小。
+我们可以发现结果是不一样的，用AIC选出了AR(15)，用BIC选出了AR(11)，这是由于AIC和BIC的对于lag数量的惩罚不同导致的，此处BIC对于lag的惩罚系数大的多（$\log(6863) > 2$），因此BIC下的最优阶数比AIC要小。
 
 (3) Set the window length at 3000 and make forecast on the next period $y_{t+1}$, start from the beginning and roll until the end. For each roll, we make forecast using AR(1) to AR(22). Compute the mean squared forecast errors and the mean absolute forecast errors for AR(1) to AR(22) and report them in a table.
 
@@ -613,10 +613,10 @@ cat(paste("The model with minimal MSE is",
           overall_mean_error$Model[mean_MAE_index]))
 ```
 
-As we can see from the output and the table of Mean Errors, the model with minimal MSE and MAE are AR(5) and AR(2), seperately. However, Ridge and Lasso regularization method didn't improve the performance as we had expected, instead, the MAE and MSE of these models are obviously higher than normal AR(22) model. As i am concerned, no lags should be punished for being non-zero in our model, all lags play a part in determining the future value of VIX and thus no need to punish a coefficient to be non-zero. Therefore, the non-necessary punishment failed the model to perform better, while instead, worse.
+As we can see from the output and the table of Mean Errors, the model with minimal MSE and MAE are AR(5) and AR(2), separately. However, Ridge and Lasso regularization method didn't improve the performance as we had expected, instead, the MAE and MSE of these models are obviously higher than normal AR(22) model. As i am concerned, no lags should be punished for being non-zero in our model, all lags play a part in determining the future value of VIX and thus no need to punish a coefficient to be non-zero. Therefore, the non-necessary punishment failed the model to perform better, while instead, worse.
 
 
-我们可以命令返回的结果以及记录平均误的表格可以的得到，按照 MSE，最好的模型是 AR(5)，按照MAE，最好的模型是AR(2)。然而，Ridge and Lasso 方法并没有如同我们所预料地，改善模型的表现，反而让模型的误差明显大于 AR(22)。我认为，这背后的原因在于，我们的模型中所有的lag都差不多得决定了未来的 VIX 值，于是没有必要惩罚非零参数。因此施加不必要的参数非零惩罚反而使得模型的表现更差了。
+我们可以命令返回的结果以及记录平均误的表格可以得到，按照 MSE，最好的模型是 AR(5)，按照MAE，最好的模型是AR(2)。然而，Ridge and Lasso 方法并没有如同我们所预料地改善模型的表现，反而让模型的误差明显大于 AR(22)。我认为，这背后的原因在于，我们的模型中所有的lag都差不多得决定了未来的 VIX 值，于是没有必要惩罚非零参数。因此施加不必要的参数非零惩罚反而使得模型的表现更差了。
 
 \newpage
 ## Question 4. Lasso vs OLS
@@ -744,5 +744,6 @@ MSE_test_table$Test_MSE <- round(MSE_test_table$Test_MSE, 7)
 print(MSE_test_table)
 ```
 
-As we can see from the report table, t-selection method has minimal MSE while ordinary no-selection model has maximal MSE. With Lasso selection, lambda.min method doesn't work as good as lambda.1se method, as it has more false positive variables included. Lasso with lambda.1se method does performs better than B-selection method, it's still not as good as t-selection method in our simulation.
+As we can see from the report table, t-selection method has minimal MSE while ordinary no-selection model has maximal MSE. With Lasso selection, `lambda.min` model doesn't work as good as `lambda.1se` model, as it has more false positive variables included. Although Lasso with lambda.1se method does performs better than B-selection method, it's still not as good as t-selection method in our simulation.
 
+如我们可以从报告的表格中可以看到，t-检验选取的模型有着最小的MSE，而未经选择的模型最大。 在Lasso选取的变量形成的模型中，因为选取的噪声变量更多，lambda.min 选择的模型表现不如`lambda.1se`选择的模型。尽管 `lambda.1se` 模型的表现要比 B-选取的模型更好，但还是不如t-检验选取的模型来得好。
